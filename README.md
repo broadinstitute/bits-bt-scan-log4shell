@@ -2,19 +2,41 @@
 
 ## Usage
 
+### Requirements
+
+#### Pre-requirements
+- **Debian**
+  - Tested on Debian 10 (buster) and 11 (bullseye).
+  - May work on other Linux distros but may also break things. So for now the install script will refuse to install on a non-Debian system.
+- **Sudo privileges**
+- [Python3](https://www.python.org/downloads/)
+  - Tested on 3.8, 3.9, and 3.10. Will **not** be automatically installed and will terminate the install process.
+
+#### Other Requirements
+
+- [masscan](https://github.com/robertdavidgraham/masscan)
+  - Will install it if it is not present.
+- [Maven](https://packages.debian.org/bullseye/maven)
+  - Will install it if it is not present.
+- [default-jdk](https://packages.debian.org/bullseye/default-jdk)
+  - Will install it if it is not present.
+
 ### Get
 
 ```
-$ wget --header "Authorization: token ${GITHUB_ACCESS_TOKEN}" 'https://api.github.com/repos/broadinstitute/bits-bt-scan-log4shell/releases/assets/...'
-$ tar -xvf ...
-$ cd ...
+$ wget --header "Authorization: token ${GITHUB_ACCESS_TOKEN}" 'https://github.com/broadinstitute/bits-bt-scan-log4shell/archive/refs/tags/{RELEASE_TAG}.tar.gz'
+$ sudo tar -xvf {RELEASE_TAG}.tar.gz /usr/local/lib
 ```
 
-# Setup
+### Setup
 
 ```bash
+$ cd /usr/local/lib/bits-bt-scan-log4shell-{RELEASE_TAG}
 # Make any necessary changes to install.conf and the two additional config files listed below.
-$ chmod +x install.sh
+$ sudo vim install.conf
+$ sudo vim log4shell-scan/scanner/config.py
+$ sudo vim log4shell-scan/listener/log4shell.yaml
+$ sudo chmod +x install.sh
 $ sudo ./install.sh
 ```
 
