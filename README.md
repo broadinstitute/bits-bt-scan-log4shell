@@ -1,5 +1,10 @@
 # Broad log4shell Web Server Scan Tool
 
+## Architecture
+
+![Lucidchart](./lucidchart.png)
+[link to latest version](https://lucid.app/lucidchart/434ccfcc-eb3b-4b82-b40c-f9f1a943cfc0/edit?viewport_loc=15%2C41%2C1790%2C1170%2C0_0&invitationId=inv_4c1416c8-da36-4a95-8337-c59e8cb457da)
+
 ## Usage
 
 ### Requirements
