@@ -11,6 +11,20 @@ printf "(cancel the install with Ctrl-C if you'd like to make any changes)\n"
 
 sleep 5
 
+SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+source ${SCRIPTPATH}/install.conf
+
+printf "\n-------------------------------------------------------------------\n"
+printf "Current install configuration:\n"
+printf "> MASSCAN_CRON              : ${MASSCAN_CRON}\n"
+printf "> MASSCAN_TARGET_PORT_RANGE : ${MASSCAN_TARGET_PORT_RANGE}\n"
+printf "> MASSCAN_TARGET_CIDR_RANGE : ${MASSCAN_TARGET_CIDR_RANGE}\n"
+printf "> MASSCAN_RATE              : ${MASSCAN_RATE}\n"
+printf "> SCANNER_PYTHONPATH        : ${SCANNER_PYTHONPATH}\n"
+printf "> SCANNER_CRON              : ${SCANNER_CRON}\n"
+
+sleep 3
+
 printf "\nStarting install process...\n"
 
 if [[ "$(lsb_release -i | cut -f 2-)" != "Debian" ]]; then
@@ -22,9 +36,6 @@ if [[ $(id -u) -ne 0 ]]; then
    printf "\nERROR: This script must be run as root. Retry with sudo or login as root.\n\n"
    exit 1
 fi
-
-SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
-source ${SCRIPTPATH}/install.conf
 
 # masscan
 printf "\n\n-------------------------------------------------------------------\n"
