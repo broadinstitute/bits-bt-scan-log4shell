@@ -89,6 +89,11 @@ try:
             '/tmp/masscan.tmp.txt do not exist, ensure masscan '
             'has run or is running).'
         )
+        raise FileNotFoundError(
+            'Not input file found! (/tmp/masscan.txt and '
+            '/tmp/masscan.tmp.txt do not exist, ensure masscan '
+            'has run or is running).'
+        )
         
     with open('/tmp/masscan.txt', 'r') as infile:
         data = infile.read().split('\n')
