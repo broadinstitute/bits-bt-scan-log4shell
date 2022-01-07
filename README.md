@@ -63,12 +63,12 @@ $ sudo ./install.sh
 
 ### Configure
 
-- Configure the install in [install.conf](/install.conf)
-  - Must be done before running `./install.sh`
+- Configure the install in [install.conf](/install.conf).
+  - Must be done before running `./install.sh`.
 - Configure the scan script in [config.py](./log4shell-scan/scanner/config.py).
   - May be done after install, the scanner will grab the latest config the next time it runs.
 - Configure the listener in [log4shell.yaml](./log4shell-scan/listener/log4shell.yaml).
-  - May be done after install, however *requires a restart to the listener system service* (`sudo systemctl restart log4shell-listener.service`)
+  - May be done after install, however *requires a restart to the listener system service* (`sudo systemctl restart log4shell-listener.service`).
 
 ### Uninstall
 
