@@ -1,8 +1,8 @@
 #!/bin/bash
 
 printf "\n-------------------------------------------------------------------\n"
-printf "Starting uninstall process...\n"
-printf "-------------------------------------------------------------------\n"
+printf "Starting uninstall process..."
+printf "\n-------------------------------------------------------------------\n"
 
 if [[ $(id -u) -ne 0 ]]; then
    printf "\nERROR: This script must be run as root. Retry with sudo or login as root.\n\n"
@@ -27,5 +27,5 @@ rm /etc/systemd/system/log4shell-listener.service
 systemctl daemon-reload
 
 printf "\n\n-------------------------------------------------------------------\n"
-printf "Uninstall complete.\n"
-printf "-------------------------------------------------------------------\n\n"
+printf "Uninstall complete."
+printf "\n-------------------------------------------------------------------\n\n"

@@ -5,8 +5,8 @@ printf "\n-------------------------------------------------------------------\n"
 printf "> Remember to update any installation configuration in ./install.conf\n"
 printf "> Additionally, ensure log4shell-scan/listener/log4shell.yaml \n"
 printf "    is accurate and up-to-date for your needs. These settings may be \n"
-printf "    changed later but will require a listener service restart.\n"
-printf "-------------------------------------------------------------------\n"
+printf "    changed later but will require a listener service restart."
+printf "\n-------------------------------------------------------------------\n"
 printf "(cancel the install with Ctrl-C if you'd like to make any changes)\n"
 
 sleep 5
@@ -54,7 +54,7 @@ cp ${SCRIPTPATH}/log4shell-scan/scanner/scan.py /usr/local/sbin/log4shell-scan
 printf "> Adjusting permissions...\n"
 chmod +x /usr/local/sbin/log4shell-scan
 printf "> Installing Python script requirements...\n"
-${LOG4SHELL_PYTHON} -m pip install -r ${SCRIPTPATH}/log4shell-scan/scanner/requirements.txt
+${SCANNER_PYTHONPATH} -m pip install -r ${SCRIPTPATH}/log4shell-scan/scanner/requirements.txt
 printf "> Adding scanner to root's crontab...\n"
 echo "${SCANNER_CRON} root /usr/local/sbin/log4shell-scan" > /etc/cron.d/log4shell-scan
 chmod 600 /etc/cron.d/masscan
@@ -93,4 +93,4 @@ printf "> Changes to the cronjobs may be done in the two files:\n"
 printf "    /etc/cron.d/log4shell-scan\n"
 printf "    /etc/cron.d/masscan\n"
 printf "    OR by editing install.conf and re-running this script."
-printf "-------------------------------------------------------------------\n\n"
+printf "\n-------------------------------------------------------------------\n\n"
