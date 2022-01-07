@@ -7,8 +7,7 @@ SuccessExitStatus=143
 
 Type=simple
 
-Environment="JAVA_HOME=/usr"
-ExecStart=${JAVA_HOME}/bin/java -jar /usr/share/java/log4shell-jar-with-dependencies.jar --config /etc/log4shell-listener.yaml
+ExecStart=/usr/bin/java -jar /usr/share/java/log4shell-jar-with-dependencies.jar --config /etc/log4shell-listener.yaml
 ExecStop=/bin/kill -15 $MAINPID
 
 [Install]

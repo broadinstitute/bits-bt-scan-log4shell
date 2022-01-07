@@ -78,7 +78,19 @@ try:
 
     config.read('/etc/log4shell-scanner.ini')
     logging.info(f'Writing logs to: {logfile}')
-    with open(os.environ['INPUT_FILE'], 'r') as infile:
+    input_file = '/tmp/masscan.txt'
+    if os.path.exists(input_file):
+        pass
+    if not os.path.exists(input_file) and os.path.exists('/tmp/masscan.tmp.txt'):
+        input_file = '/tmp/masscan.tmp.txt'
+    else:
+        logging.critical(
+            'Not input file found! (/tmp/masscan.txt and '
+            '/tmp/masscan.tmp.txt do not exist, ensure masscan '
+            'has run or is running).'
+        )
+        
+    with open('/tmp/masscan.txt', 'r') as infile:
         data = infile.read().split('\n')
     ndata = []
     for row in data:

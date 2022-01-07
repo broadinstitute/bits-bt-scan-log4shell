@@ -12,23 +12,24 @@ $ cd ...
 
 # Setup
 
-- Add the scanner to your crontab (`crontab -e`):
+```bash
+# Make any necessary changes to install.conf and the two additional config files listed below.
+$ chmod +x install.sh
+$ sudo ./install.sh
 ```
-0 20 * * 1 sudo /usr/bin/masscan -v -p${TARGET_PORT_RANGE} ${TARGET_CIDR_RANGE} -oL /tmp/masscan.txt --max-rate 10000
-0 10 * * * sudo /home/mobrien/log4shell-scanner/scan.py
-```
-
-<!-- Not yet supported
-```
-# cp ./log4shell-scan/listener/log4shell-listener.service /etc/systemd/system/
-# systemctl daemon-reload
-# systemctl enable log4shell-listener.service
-# systemctl start log4shell-listener.service
-# systemctl status log4shell-listener.service
-``` -->
 
 ### Configure
 
+- Configure the install in [install.conf](/install.conf)
+  - Must be done before running `./install.sh`
 - Configure the scan script in [config.py](./log4shell-scan/scanner/config.py).
+  - May be done after install, the scanner will grab the latest config the next time it runs.
 - Configure the listener in [log4shell.yaml](./log4shell-scan/listener/log4shell.yaml).
+  - May be done after install, however *requires a restart to the listener system service* (`sudo systemctl restart log4shell-listener.service`)
 
+### Uninstall
+
+```bash
+$ chmod +x uninstall.sh
+$ ./uninstall.sh
+```
