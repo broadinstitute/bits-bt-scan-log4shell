@@ -68,7 +68,7 @@ printf "> Installing Python script requirements...\n"
 ${SCANNER_PYTHONPATH} -m pip install -r ${SCRIPTPATH}/log4shell-scan/scanner/requirements.txt
 printf "> Adding scanner to root's crontab...\n"
 echo "${SCANNER_CRON} root /usr/local/sbin/log4shell-scan" > /etc/cron.d/log4shell-scan
-chmod 600 /etc/cron.d/masscan
+chmod 600 /etc/cron.d/log4shell-scan
 printf "> Scanner installed successfully.\n"
 
 # listener

@@ -25,7 +25,7 @@
 
 ```
 $ wget --header "Authorization: token ${GITHUB_ACCESS_TOKEN}" 'https://github.com/broadinstitute/bits-bt-scan-log4shell/archive/refs/tags/{RELEASE_TAG}.tar.gz'
-$ sudo tar -xvf {RELEASE_TAG}.tar.gz /usr/local/lib
+$ sudo tar -xvf {RELEASE_TAG}.tar.gz -C /usr/local/lib
 ```
 
 ### Setup
@@ -34,7 +34,7 @@ $ sudo tar -xvf {RELEASE_TAG}.tar.gz /usr/local/lib
 $ cd /usr/local/lib/bits-bt-scan-log4shell-{RELEASE_TAG}
 # Make any necessary changes to install.conf and the two additional config files listed below.
 $ sudo vim install.conf
-$ sudo vim log4shell-scan/scanner/config.py
+$ sudo vim log4shell-scan/scanner/config.ini
 $ sudo vim log4shell-scan/listener/log4shell.yaml
 $ sudo chmod +x install.sh
 $ sudo ./install.sh
