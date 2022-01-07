@@ -38,16 +38,16 @@ $ sudo tar -xvf {RELEASE_TAG}.tar.gz -C /usr/local/lib
 - Installation sets up three main tasks:
   - [masscan](https://github.com/robertdavidgraham/masscan):
     - Installs if it is not present.
-    - Stores the cronjob as `/etc/cron.d/log4shell-masscan`
+    - Stores the cronjob as `/etc/cron.d/log4shell-masscan`.
   - Scanner:
     - Installs Python requirements.
-    - Stores the script as `/usr/local/sbin/log4shell-scan`
-    - Stores the config file as `/etc/log4shell-scan.ini`
-    - Stores the cronjob as `/etc/cron.d/log4shell-scan`
+    - Stores the script as `/usr/local/sbin/log4shell-scan`.
+    - Stores the config file as `/etc/log4shell-scan.ini`.
+    - Stores the cronjob as `/etc/cron.d/log4shell-scan`.
   - Listener:
     - Installs [maven](https://packages.debian.org/bullseye/maven) and [default-jdk](https://packages.debian.org/bullseye/default-jdk) if they are not present.
-    - Builds and stores the `jar` as `/usr/share/java/log4shell-jar-with-dependencies.jar`
-    - Adds it to the system services under `/etc/systemd/system/log4shell-listener.service`
+    - Builds and stores the `jar` as `/usr/share/java/log4shell-jar-with-dependencies.jar`.
+    - Adds it to the system services under `/etc/systemd/system/log4shell-listener.service`.
     - Refreshes the daemon and enables & starts the service.
 - **All of the above will and must be run as root.**
 
