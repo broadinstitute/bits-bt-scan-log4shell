@@ -51,7 +51,7 @@ if [[ -z "$(type -P masscan)" ]]; then
 fi
 
 printf "> Adding masscan job to root's crontab...\n"
-echo "${MASSCAN_CRON} root /usr/bin/masscan -v -p${MASSCAN_TARGET_PORT_RANGE} ${MASSCAN_TARGET_CIDR_RANGE} -oL /tmp/masscan.tmp.txt --max-rate ${MASSCAN_RATE} && mv /tmp/masscan.tmp.txt /tmp/masscan.txt" > /etc/cron.d/log4shell-masscan
+echo "${MASSCAN_CRON} root /usr/bin/masscan -v -p${MASSCAN_TARGET_PORT_RANGE} ${MASSCAN_TARGET_CIDR_RANGE} -oL /tmp/masscan.tmp.txt --max-rate ${MASSCAN_RATE} && mv /tmp/masscan.tmp.txt /tmp/masscan.txt\n" > /etc/cron.d/log4shell-masscan
 chmod 600 /etc/cron.d/log4shell-masscan
 printf "> Masscan installed successfully.\n"
 
@@ -67,7 +67,7 @@ chmod +x /usr/local/sbin/log4shell-scan
 printf "> Installing Python script requirements...\n"
 ${SCANNER_PYTHONPATH} -m pip install -r ${SCRIPTPATH}/log4shell-scan/scanner/requirements.txt
 printf "> Adding scanner to root's crontab...\n"
-echo "${SCANNER_CRON} root /usr/local/sbin/log4shell-scan" > /etc/cron.d/log4shell-scan
+echo "${SCANNER_CRON} root /usr/local/sbin/log4shell-scan\n" > /etc/cron.d/log4shell-scan
 chmod 600 /etc/cron.d/log4shell-scan
 printf "> Scanner installed successfully.\n"
 

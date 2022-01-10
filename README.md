@@ -15,7 +15,7 @@
   - May work on other Linux distros but may also break things. So for now the install script will refuse to install on a non-Debian system.
 - **Sudo privileges**
 - [Python3](https://www.python.org/downloads/)
-  - Tested on 3.8, 3.9, and 3.10. Will **not** be automatically installed and will terminate the install process.
+  - Tested on 3.8, 3.9, and 3.10. Will **not** be automatically installed and will terminate the install process if it is not present.
 
 #### Other Requirements
 
