@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 printf "\n-------------------------------------------------------------------\n"
 printf "Starting uninstall process..."
@@ -9,21 +10,24 @@ if [[ $(id -u) -ne 0 ]]; then
    exit 1
 fi
 
+SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+source ${SCRIPTPATH}/install.conf
+
 printf "Removing config files...\n"
-rm /etc/log4shell-scan.ini
-rm /etc/log4shell-listener.yaml
+rm $LISTENER_CONFIG_LOC
+rm $SCANNER_CONFIG_LOC
 
 printf "Removing scripts and executables...\n"
-rm /usr/share/java/log4shell-jar-with-dependencies.jar
-rm /usr/local/sbin/log4shell-scan
+rm $LISTENER_SCRIPT_LOC
+rm $SCANNER_SCRIPT_LOC
 
 printf "Removing cronjobs...\n"
-rm /etc/cron.d/log4shell-scan
-rm /etc/cron.d/log4shell-masscan
+rm $SCANNER_CRON_LOC
+rm $MASSCAN_CRON_LOC
 
 printf "Removing listener system service and restarting daemon..."
-systemctl stop log4shell-listener.service
-rm /etc/systemd/system/log4shell-listener.service
+systemctl stop $LISTENER_SERVICE_NAME
+rm $LISTENER_SERVICE_UNIT_LOC
 systemctl daemon-reload
 
 printf "\n\n-------------------------------------------------------------------\n"

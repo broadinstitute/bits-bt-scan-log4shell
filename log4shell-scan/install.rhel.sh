@@ -27,8 +27,10 @@ sleep 3
 
 printf "\nStarting install process...\n"
 
-if [[ "$(lsb_release -i | cut -f 2-)" != "Debian" ]]; then
-    printf "\nERROR: This package is only supported on Debian and may break things on other distros. Cancelling install.\n\n"
+source /etc/os-release
+
+if [[ "${ID}" != "rhel" ]]; then
+    printf "\nERROR: This package is only supported on RHEL and may break things on other distros. Cancelling install.\n\n"
     exit 1
 fi
 
@@ -44,64 +46,82 @@ cd ${SCRIPTPATH}
 printf "> Checking if masscan is installed...\n"
 if [[ -z "$(type -P masscan)" ]]; then
     printf "> Installing masscan dependencies...\n"
-    apt update && apt-get --assume-yes install git make gcc
+    yum update && yum -y install git make gcc
     printf "> Installing masscan...\n"
     cd /lib && git clone https://github.com/robertdavidgraham/masscan
     cd /lib/masscan && make install
 fi
 
 printf "> Adding masscan job to root's crontab...\n"
-echo "${MASSCAN_CRON} root /usr/bin/masscan -v -p${MASSCAN_TARGET_PORT_RANGE} ${MASSCAN_TARGET_CIDR_RANGE} -oL /tmp/masscan.tmp.txt --max-rate ${MASSCAN_RATE} && mv /tmp/masscan.tmp.txt /tmp/masscan.txt\n" > /etc/cron.d/log4shell-masscan
-chmod 600 /etc/cron.d/log4shell-masscan
+echo "${MASSCAN_CRON} root /usr/bin/masscan -v -p${MASSCAN_TARGET_PORT_RANGE} ${MASSCAN_TARGET_CIDR_RANGE} -oL /tmp/masscan.tmp.txt --max-rate ${MASSCAN_RATE} && mv /tmp/masscan.tmp.txt /tmp/masscan.txt\n" > ${MASSCAN_CRON_LOC}
+chmod 600 ${MASSCAN_CRON_LOC}
 printf "> Masscan installed successfully.\n"
 
 # scanner
+SCANNER_SRC_PATH=${SCRIPTPATH}/log4shell-scan/scanner
 printf "\n\n-------------------------------------------------------------------\n"
 printf "Preparing log4shell-scanner...\n"
 cd ${SCRIPTPATH}
 printf "> Moving script and config files to proper locations...\n"
-cp ${SCRIPTPATH}/log4shell-scan/scanner/config.ini /etc/log4shell-scan.ini
-cp ${SCRIPTPATH}/log4shell-scan/scanner/scan.py /usr/local/sbin/log4shell-scan
+if [[ -e $SCANNER_CONFIG_LOC ]]; then
+    printf "> $SCANNER_CONFIG_LOC config detected, keeping original.\n"
+else
+    cp ${SCANNER_SRC_PATH}/config.ini $SCANNER_CONFIG_LOC
+fi
+cp ${SCANNER_SRC_PATH}/scan.py ${SCANNER_SCRIPT_LOC}
 printf "> Adjusting permissions...\n"
-chmod +x /usr/local/sbin/log4shell-scan
+chmod +x ${SCANNER_SCRIPT_LOC}
 printf "> Installing Python script requirements...\n"
-${SCANNER_PYTHONPATH} -m pip install -r ${SCRIPTPATH}/log4shell-scan/scanner/requirements.txt
+${SCANNER_PYTHONPATH} -m pip install -r ${SCANNER_SRC_PATH}/requirements.txt
 printf "> Adding scanner to root's crontab...\n"
-echo "${SCANNER_CRON} root /usr/local/sbin/log4shell-scan\n" > /etc/cron.d/log4shell-scan
-chmod 600 /etc/cron.d/log4shell-scan
+echo "${SCANNER_CRON} root ${SCANNER_SCRIPT_LOC}\n" > ${SCANNER_CRON_LOC}
+chmod 600 ${SCANNER_CRON_LOC}
 printf "> Scanner installed successfully.\n"
 
 # listener
+LISTENER_SRC_PATH=${SCRIPTPATH}/log4shell-scan/listener
 printf "\n\n-------------------------------------------------------------------\n"
 printf "Preparing log4shell-listener...\n"
 cd ${SCRIPTPATH}
-printf "> Moving config file to proper location...\n"
-cp ${SCRIPTPATH}/log4shell-scan/listener/log4shell.yaml /etc/log4shell-listener.yaml
-if [[ -z "$(type -P mvn)" ]]; then
-    printf "> Installing mvn...\n"
-    apt update && apt install -y maven default-jdk
+printf "> Moving files to proper locations...\n"
+if [[ -e $LISTENER_CONFIG_LOC ]]; then
+    printf "> $LISTENER_CONFIG_LOC config detected, keeping original.\n"
+else
+    cp ${LISTENER_SRC_PATH}/config.ini $LISTENER_CONFIG_LOC
 fi
-printf "> Building jar...\n"
-cd ${SCRIPTPATH}/log4shell-scan/listener && mvn clean package
-mv ${SCRIPTPATH}/log4shell-scan/listener/target/log4shell-jar-with-dependencies.jar /usr/share/java
+cp ${LISTENER_SRC_PATH}/listen.py $LISTENER_SCRIPT_LOC
+chmod +x $LISTENER_SCRIPT_LOC
+printf "> Installing Python script requirements...\n"
+${SCANNER_PYTHONPATH} -m pip install -r ${LISTENER_SRC_PATH}/requirements.txt
 printf "> Adding unit file to services...\n"
-cp ${SCRIPTPATH}/log4shell-scan/listener/log4shell-listener.service /etc/systemd/system/
+cp ${LISTENER_SRC_PATH}/log4shell-listen.service $LISTENER_SERVICE_UNIT_LOC
 printf "> Reloading services and starting listener...\n"
 systemctl daemon-reload
-systemctl enable log4shell-listener.service
-systemctl start log4shell-listener.service
-systemctl status log4shell-listener.service
+systemctl enable $LISTENER_SERVICE_NAME
+systemctl restart $LISTENER_SERVICE_NAME
+sleep 2
+systemctl status $LISTENER_SERVICE_NAME
+sleep 2
 
-printf "\n\n-------------------------------------------------------------------\n"
+printf "\n\n----------------------------------------------------------------------\n"
 printf "Install successful.\n"
 printf "> Runtime configuration for the scanner may be done in \n"
-printf "    /etc/log4shell-scan.ini\n"
+printf "    ${SCANNER_CONFIG_LOC}\n"
 printf "> Note that any changes to the listener's config in \n"
-printf "    /etc/log4shell-listener.yaml will require the service \n"
+printf "    ${LISTENER_CONFIG_LOC} will require the service \n"
 printf "    to be restarted with: \n"
-printf "    $ sudo systemctl restart log4shell-listener.service\n" 
+printf "    $ sudo systemctl restart ${LISTENER_SERVICE_NAME}\n" 
 printf "> Changes to the cronjobs may be done in the two files:\n"
-printf "    /etc/cron.d/log4shell-scan\n"
-printf "    /etc/cron.d/masscan\n"
+printf "    ${SCANNER_CRON_LOC}\n"
+printf "    ${MASSCAN_CRON_LOC}\n"
 printf "    OR by editing install.conf and re-running this script."
-printf "\n-------------------------------------------------------------------\n\n"
+printf "\n----------------------------------------------------------------------\n"
+printf "IMPORTANT REMINDER!\n"
+printf "    Set the following variables (blank by default):\n"
+printf "    - ${SCANNER_CONFIG_LOC}\n"
+printf "        - listener_ip\n"
+printf "        - webhook\n"
+printf "    - ${LISTENER_CONFIG_LOC}\n"
+printf "        - webhook\n"
+printf "Failure to do so will mean you are not alerted on exploits and crashes!"
+printf "\n----------------------------------------------------------------------\n\n"

@@ -10,9 +10,9 @@
 ### Requirements
 
 #### Pre-requirements
-- **Debian**
-  - Tested on Debian 10 (buster) and 11 (bullseye).
-  - May work on other Linux distros but may also break things. So for now the install script will refuse to install on a non-Debian system.
+- **Debian OR RHEL7**
+  - Tested on Debian 10 (buster), Debian 11 (bullseye), and RHEL 7.
+  - May work on other Linux distros but may also break things. So for now the install script will refuse to install on a non-Debian/RHEL system.
 - **Sudo privileges**
 - [Python3](https://www.python.org/downloads/)
   - Tested on 3.8, 3.9, and 3.10. Will **not** be automatically installed and will terminate the install process if it is not present.
@@ -20,11 +20,7 @@
 #### Other Requirements
 
 - [masscan](https://github.com/robertdavidgraham/masscan)
-  - Will install it if it is not present.
-- [maven](https://packages.debian.org/bullseye/maven)
-  - Will install it if it is not present.
-- [default-jdk](https://packages.debian.org/bullseye/default-jdk)
-  - Will install it if it is not present.
+  - Will install it if it is not present.\
 
 ### Get
 
@@ -45,14 +41,14 @@ $ sudo tar -xvf {RELEASE_TAG}.tar.gz -C /usr/local/lib
     - Stores the config file as `/etc/log4shell-scan.ini`.
     - Stores the cronjob as `/etc/cron.d/log4shell-scan`.
   - Listener:
-    - Installs [maven](https://packages.debian.org/bullseye/maven) and [default-jdk](https://packages.debian.org/bullseye/default-jdk) if they are not present.
-    - Builds and stores the `jar` as `/usr/share/java/log4shell-jar-with-dependencies.jar`.
-    - Adds it to the system services under `/etc/systemd/system/log4shell-listener.service`.
+    - Stores the script as `/usr/local/sbin/log4shell-listen`.
+    - Stores the config file as `/etc/log4shell-listen.ini`.
+    - Stores the service unit as `/etc/systemd/system/log4shell-listen.service`.
     - Refreshes the daemon and enables & starts the service.
 - **All of the above will and must be run as root.**
 
 ```bash
-$ cd /usr/local/lib/bits-bt-scan-log4shell-{RELEASE_TAG}
+$ cd /usr/local/lib/bits-bt-scan-log4shell-{RELEASE_TAG}/log4shell-scan
 # Make any necessary changes to install.conf and the two additional config files listed below.
 $ sudo vim install.conf
 $ sudo vim log4shell-scan/scanner/config.ini
@@ -63,17 +59,17 @@ $ sudo ./install.sh
 
 ### Configure
 
-- Configure the install in [install.conf](/install.conf).
+- Configure the install in [install.conf](./log4shell-scan/install.conf).
   - Must be done before running `./install.sh`.
-- Configure the scan script in [config.py](./log4shell-scan/scanner/config.py).
+- Configure the scan script in [config.ini](./log4shell-scan/scanner/config.ini).
   - May be done after install, the scanner will grab the latest config the next time it runs.
-- Configure the listener in [log4shell.yaml](./log4shell-scan/listener/log4shell.yaml).
-  - May be done after install, however *requires a restart to the listener system service* (`sudo systemctl restart log4shell-listener.service`).
+- Configure the listener in [log4shell.yaml](./log4shell-scan/listener/config.ini).
+  - May be done after install, however *requires a restart to the listener system service* (`sudo systemctl restart log4shell-listen.service`).
 
 ### Uninstall
 
 ```bash
-$ cd /usr/local/lib/bits-bt-scan-log4shell-{RELEASE_TAG}
+$ cd /usr/local/lib/bits-bt-scan-log4shell-{RELEASE_TAG}/log4shell-scan
 $ sudo chmod +x uninstall.sh
 $ sudo ./uninstall.sh
 ```
