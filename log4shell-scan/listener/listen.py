@@ -4,6 +4,7 @@ import os
 import configparser
 from bibtutils.slack import message
 import traceback
+import sys
 
 from datetime import date
 import logging
