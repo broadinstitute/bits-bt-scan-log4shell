@@ -1,0 +1,11 @@
+[Unit]
+Description=log4shell exploit listener service
+After=network.target
+
+[Service]
+Type=exec
+User=root
+ExecStart=/usr/local/sbin/log4shell-listen
+
+[Install]
+WantedBy=multi-user.target
