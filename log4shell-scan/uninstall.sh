@@ -13,9 +13,9 @@ fi
 SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 source ${SCRIPTPATH}/install.conf
 
-printf "Removing config files...\n"
-rm $LISTENER_CONFIG_LOC
-rm $SCANNER_CONFIG_LOC
+# printf "Removing config files...\n"
+# rm $LISTENER_CONFIG_LOC
+# rm $SCANNER_CONFIG_LOC
 
 printf "Removing scripts and executables...\n"
 rm $LISTENER_SCRIPT_LOC
