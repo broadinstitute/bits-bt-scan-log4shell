@@ -51,7 +51,7 @@ if [[ -z "$(type -P masscan)" ]]; then
 fi
 
 printf "> Adding masscan job to root's crontab...\n"
-echo "${MASSCAN_CRON} root /usr/bin/masscan -v -p${MASSCAN_TARGET_PORT_RANGE} ${MASSCAN_TARGET_CIDR_RANGE} -oL /tmp/masscan.tmp.txt --max-rate ${MASSCAN_RATE} && mv /tmp/masscan.tmp.txt /tmp/masscan.txt\n" > ${MASSCAN_CRON_LOC}
+echo "${MASSCAN_CRON} root /usr/bin/masscan -v -p${MASSCAN_TARGET_PORT_RANGE} ${MASSCAN_TARGET_CIDR_RANGE} -oL /tmp/masscan.tmp.txt --max-rate ${MASSCAN_RATE} && mv /tmp/masscan.tmp.txt /tmp/masscan.txt" > ${MASSCAN_CRON_LOC}
 chmod 600 ${MASSCAN_CRON_LOC}
 printf "> Masscan installed successfully.\n"
 
@@ -72,7 +72,7 @@ chmod +x ${SCANNER_SCRIPT_LOC}
 printf "> Installing Python script requirements...\n"
 ${SCANNER_PYTHONPATH} -m pip install -r ${SCANNER_SRC_PATH}/requirements.txt
 printf "> Adding scanner to root's crontab...\n"
-echo "${SCANNER_CRON} root ${SCANNER_SCRIPT_LOC}\n" > ${SCANNER_CRON_LOC}
+echo "${SCANNER_CRON} root ${SCANNER_SCRIPT_LOC}" > ${SCANNER_CRON_LOC}
 chmod 600 ${SCANNER_CRON_LOC}
 printf "> Scanner installed successfully.\n"
 

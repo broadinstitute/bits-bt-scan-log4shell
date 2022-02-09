@@ -73,3 +73,25 @@ $ cd /usr/local/lib/bits-bt-scan-log4shell-{RELEASE_TAG}/log4shell-scan
 $ sudo chmod +x uninstall.sh
 $ sudo ./uninstall.sh
 ```
+
+### Testing
+
+- Replace ${GCP_PROJECT_NAME} and  ${GCP_PROJECT_ID} as appropriate.
+
+```bash
+gcloud compute instances create rhel-testing \
+  --project=${GCP_PROJECT_NAME} \
+  --zone=northamerica-northeast2-a \
+  --machine-type=e2-micro \
+  --network-interface=network-tier=PREMIUM,subnet=default \
+  --maintenance-policy=MIGRATE \
+  --service-account=${GCP_PROJECT_ID}-compute@developer.gserviceaccount.com \
+  --scopes=https://www.googleapis.com/auth/devstorage.read_only,https://www.googleapis.com/auth/logging.write,https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/servicecontrol,https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/trace.append \
+  --tags=rhel-testing \
+  --create-disk=auto-delete=yes,boot=yes,device-name=rhel-testing,image=projects/rhel-cloud/global/images/rhel-7-v20220126,mode=rw,size=20,type=projects/bits-bt-sandbox/zones/northamerica-northeast2-a/diskTypes/pd-balanced \
+  --no-shielded-secure-boot \
+  --shielded-vtpm \
+  --shielded-integrity-monitoring \
+  --reservation-affinity=any
+
+```
