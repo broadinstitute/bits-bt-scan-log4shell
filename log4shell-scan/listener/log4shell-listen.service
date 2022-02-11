@@ -4,8 +4,13 @@ After=network.target
 
 [Service]
 Type=exec
-User=root
-ExecStart=/usr/local/sbin/log4shell-listen
+ExecStart=/local/listen.py
+StandardOutput=journal
+User=infosecbot
+Group=blue_team_sa
+WorkingDirectory=/local
+Restart=always
+RestartSec=1
 
 [Install]
 WantedBy=multi-user.target

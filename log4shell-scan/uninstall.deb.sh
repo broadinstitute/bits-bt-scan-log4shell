@@ -5,13 +5,18 @@ printf "\n-------------------------------------------------------------------\n"
 printf "Starting uninstall process..."
 printf "\n-------------------------------------------------------------------\n"
 
+if [[ "$(lsb_release -i | cut -f 2-)" != "Debian" ]]; then
+    printf "\nERROR: This package is only supported on Debian and may break things on other distros. Cancelling install.\n\n"
+    exit 1
+fi
+
 if [[ $(id -u) -ne 0 ]]; then
    printf "\nERROR: This script must be run as root. Retry with sudo or login as root.\n\n"
    exit 1
 fi
 
 SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
-source ${SCRIPTPATH}/install.conf
+source ${SCRIPTPATH}/install.deb.conf
 
 # printf "Removing config files...\n"
 # rm $LISTENER_CONFIG_LOC

@@ -2,10 +2,8 @@
 set -e
 
 printf "\n-------------------------------------------------------------------\n"
+printf "IMPORTANT REMINDER!\n"
 printf "> Remember to update any installation configuration in ./install.conf\n"
-printf "> Additionally, ensure log4shell-scan/listener/log4shell.yaml \n"
-printf "    is accurate and up-to-date for your needs. These settings may be \n"
-printf "    changed later but will require a listener service restart."
 printf "\n-------------------------------------------------------------------\n"
 printf "(cancel the install with Ctrl-C if you'd like to make any changes)\n"
 
@@ -46,12 +44,12 @@ if [[ -z "$(type -P masscan)" ]]; then
     printf "> Installing masscan dependencies...\n"
     apt update && apt-get --assume-yes install git make gcc
     printf "> Installing masscan...\n"
-    cd /lib && git clone https://github.com/robertdavidgraham/masscan
-    cd /lib/masscan && make install
+    cd /usr/local/src && git clone https://github.com/robertdavidgraham/masscan
+    cd /usr/local/src/masscan && make install
 fi
 
 printf "> Adding masscan job to root's crontab...\n"
-echo "${MASSCAN_CRON} root /usr/bin/masscan -v -p${MASSCAN_TARGET_PORT_RANGE} ${MASSCAN_TARGET_CIDR_RANGE} -oL /tmp/masscan.tmp.txt --max-rate ${MASSCAN_RATE} && mv /tmp/masscan.tmp.txt /tmp/masscan.txt" > ${MASSCAN_CRON_LOC}
+echo "${MASSCAN_CRON} root /usr/bin/masscan -v -p${MASSCAN_TARGET_PORT_RANGE} ${MASSCAN_TARGET_CIDR_RANGE} -oL ${MASSCAN_OUTPUT_TMP} --max-rate ${MASSCAN_RATE} && mv ${MASSCAN_OUTPUT_TMP} ${MASSCAN_OUTPUT}" > ${MASSCAN_CRON_LOC}
 chmod 600 ${MASSCAN_CRON_LOC}
 printf "> Masscan installed successfully.\n"
 
@@ -65,14 +63,20 @@ if [[ -e $SCANNER_CONFIG_LOC ]]; then
     printf "> $SCANNER_CONFIG_LOC config detected, keeping original.\n"
 else
     cp ${SCANNER_SRC_PATH}/config.ini $SCANNER_CONFIG_LOC
+    sed -i "s:log_dir =:log_dir = ${SCANNER_LOG_LOC}:" $SCANNER_CONFIG_LOC
+    sed -i "s:primary_input =:primary_input = ${MASSCAN_OUTPUT}:" $SCANNER_CONFIG_LOC
+    sed -i "s:secondary_input =:secondary_input = ${MASSCAN_OUTPUT_TMP}:" $SCANNER_CONFIG_LOC
 fi
 cp ${SCANNER_SRC_PATH}/scan.py ${SCANNER_SCRIPT_LOC}
+if [[ "${SCRIPTS_PYTHONPATH}" != "/usr/bin/env python3" ]]; then
+    sed -i "s:#!/usr/bin/env python3:#!${SCRIPTS_PYTHONPATH}:" ${SCANNER_SCRIPT_LOC}
+fi
 printf "> Adjusting permissions...\n"
 chmod +x ${SCANNER_SCRIPT_LOC}
 printf "> Installing Python script requirements...\n"
-${SCANNER_PYTHONPATH} -m pip install -r ${SCANNER_SRC_PATH}/requirements.txt
+${SCRIPTS_PYTHONPATH} -m pip install -r ${SCANNER_SRC_PATH}/requirements.txt
 printf "> Adding scanner to root's crontab...\n"
-echo "${SCANNER_CRON} root ${SCANNER_SCRIPT_LOC}" > ${SCANNER_CRON_LOC}
+echo "${SCANNER_CRON} root env L4S_CONFIG_FILE=\"${SCANNER_CONFIG_LOC}\" ${SCANNER_SCRIPT_LOC}" > ${SCANNER_CRON_LOC}
 chmod 600 ${SCANNER_CRON_LOC}
 printf "> Scanner installed successfully.\n"
 
@@ -85,12 +89,15 @@ printf "> Moving files to proper locations...\n"
 if [[ -e $LISTENER_CONFIG_LOC ]]; then
     printf "> $LISTENER_CONFIG_LOC config detected, keeping original.\n"
 else
+    sed -i "s:log_dir =:log_dir = ${LISTENER_LOG_LOC}:" ${LISTENER_SRC_PATH}/config.ini
     cp ${LISTENER_SRC_PATH}/config.ini $LISTENER_CONFIG_LOC
 fi
 cp ${LISTENER_SRC_PATH}/listen.py $LISTENER_SCRIPT_LOC
+sed -i "s:#!/usr/bin/env python3:#!${SCRIPTS_PYTHONPATH}:" $LISTENER_SCRIPT_LOC
+sed -i "s:L4SL_CONFIG_FILE = \"\":L4SL_CONFIG_FILE = \"${LISTENER_CONFIG_LOC}\":" $LISTENER_SCRIPT_LOC
 chmod +x $LISTENER_SCRIPT_LOC
 printf "> Installing Python script requirements...\n"
-${SCANNER_PYTHONPATH} -m pip install -r ${LISTENER_SRC_PATH}/requirements.txt
+${SCRIPTS_PYTHONPATH} -m pip install -r ${LISTENER_SRC_PATH}/requirements.txt
 printf "> Adding unit file to services...\n"
 cp ${LISTENER_SRC_PATH}/log4shell-listen.service $LISTENER_SERVICE_UNIT_LOC
 printf "> Reloading services and starting listener...\n"
