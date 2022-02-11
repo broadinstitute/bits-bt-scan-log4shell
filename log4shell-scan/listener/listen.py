@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-import socketserver
-import os
 import configparser
-from bibtutils.slack import message
-import traceback
-import sys
-
-from datetime import date
 import logging
+import os
+import socketserver
+import sys
+import traceback
+from datetime import date
+
+from bibtutils.slack import message
 
 LDAP_HEADER = b"\x30\x0c\x02\x01\x01\x61\x07\x0a\x01\x00\x04\x00\x04\x00\x0a"
 L4SL_CONFIG_FILE = ""

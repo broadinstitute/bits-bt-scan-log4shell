@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
-import traceback
-import aiohttp
 import asyncio
-import os
-import requests
-from urllib import parse
 import configparser
-import sys
 import logging
+import os
+import sys
+import traceback
+from datetime import date
+from datetime import datetime
+from datetime import timedelta
+from urllib import parse
+
+import aiohttp
+import requests
 from bibtutils.slack import message
-from datetime import datetime, timedelta, date
 
 
 def clean_logs(logdir):
