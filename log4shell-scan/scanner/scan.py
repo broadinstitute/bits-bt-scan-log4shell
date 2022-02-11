@@ -1,18 +1,21 @@
 #!/usr/bin/env python3
-import traceback
-import aiohttp
 import asyncio
-import os
-import requests
-from urllib import parse
 import configparser
-import sys
 import logging
+import os
+import sys
+import traceback
+from datetime import date
+from datetime import datetime
+from datetime import timedelta
+from urllib import parse
+
+import aiohttp
+import requests
 from bibtutils.slack import message
-from datetime import datetime, timedelta, date
 
 
-def clean_logs():
+def clean_logs(logdir):
     """
     Cleans out all log files older than 7 days.
     """
@@ -29,12 +32,12 @@ async def request(session, host):
     """
     logging.info(f"> {host}")
     payload_msg = (
-        f'[{host}] {os.environ["HEADER_FIELD"]}: {os.environ["PAYLOAD_PREFIX"]}'
+        f'[{host}] {os.environ["L4S_HEADER_FIELD"]}: {os.environ["L4S_PAYLOAD_PREFIX"]}'
     )
     headers = {}
-    headers[os.environ["HEADER_FIELD"]] = (
-        os.environ["PAYLOAD_PREFIX"]
-        + f'{os.environ["LISTENER_IP"]}:{os.environ["LISTENER_PORT"]}/{parse.quote_plus(payload_msg)}'
+    headers[os.environ["L4S_HEADER_FIELD"]] = (
+        os.environ["L4S_PAYLOAD_PREFIX"]
+        + f'{os.environ["L4S_LISTENER_IP"]}:{os.environ["L4S_LISTENER_PORT"]}/{parse.quote_plus(payload_msg)}'
         + "}"
     )
     logging.debug(f"Request headers: {headers}")
@@ -66,39 +69,44 @@ async def main(data):
     ]
     """
     # data.insert(0, "127.0.0.1:8080/")
-    connector = aiohttp.TCPConnector(limit=os.environ["ASYNC_SESSION_LIMIT"])
+    connector = aiohttp.TCPConnector(limit=os.environ["L4S_ASYNC_SESSION_LIMIT"])
     async with aiohttp.ClientSession(connector=connector) as session:
         tasks = [request(session, record) for record in data]
         await asyncio.gather(*tasks)
 
 
 try:
-    logdir = "/var/log/log4shell-scan"
-    if not os.path.exists(logdir):
-        os.mkdir(logdir)
-    logfile = f"{logdir}/{date.today().isoformat()}.log"
-    logging.basicConfig(level=logging.DEBUG, filename=logfile)
-    clean_logs()
+    config_file = os.environ["L4S_CONFIG_FILE"]
     config = configparser.ConfigParser()
-    config.read("/etc/log4shell-scan.ini")
+    config.read(config_file)
     for key in config["default"]:
-        os.environ[key.upper()] = config["default"][key]
+        os.environ[f"L4S_{key.upper()}"] = config["default"][key]
+
+    LOG_DIR = os.environ.get("L4S_LOG_DIR")
+    if not os.path.exists(LOG_DIR):
+        os.mkdir(LOG_DIR)
+    logfile = f"{LOG_DIR}/{date.today().isoformat()}.log"
+    logging.basicConfig(level=logging.DEBUG, filename=logfile)
+    clean_logs(LOG_DIR)
 
     logging.info(f"Writing logs to: {logfile}")
-    input_file = "/tmp/masscan.txt"
-    if os.path.exists(input_file):
-        pass
-    elif not os.path.exists(input_file) and os.path.exists("/tmp/masscan.tmp.txt"):
-        input_file = "/tmp/masscan.tmp.txt"
+    primary_input_file = os.environ.get("L4S_PRIMARY_INPUT")
+    secondary_input_file = os.environ.get("L4S_SECONDARY_INPUT", None)
+    if os.path.exists(primary_input_file):
+        input_file = primary_input_file
+    elif not os.path.exists(primary_input_file) and os.path.exists(
+        secondary_input_file
+    ):
+        input_file = secondary_input_file
     else:
         logging.critical(
-            "No input file found! (/tmp/masscan.txt and "
-            "/tmp/masscan.tmp.txt do not exist, ensure masscan "
+            f"No input file found! ({primary_input_file} and "
+            f"{secondary_input_file} do not exist, ensure masscan "
             "has run or is running)."
         )
         raise FileNotFoundError(
-            "No input file found! (/tmp/masscan.txt and "
-            "/tmp/masscan.tmp.txt do not exist, ensure masscan "
+            f"No input file found! ({primary_input_file} and "
+            f"{secondary_input_file} do not exist, ensure masscan "
             "has run or is running)."
         )
 
@@ -125,7 +133,7 @@ except Exception as e:
         if len(stacktrace) > 300:
             stacktrace = "...\n" + stacktrace[:-300]
         message.send_message(
-            os.environ["WEBHOOK"],
+            os.environ["L4S_WEBHOOK"],
             title=":exclamation: *Critical Error on log4shell-scan Script* :exclamation: @mobrien",
             text=(
                 f"```{type(e).__name__}: {e}```\n"
@@ -138,7 +146,10 @@ except Exception as e:
         logging.critical(
             f"Exception caught while handling exception: {type(f).__name__}: {f}"
         )
-        stacktrace = "".join(traceback.format_exception(f))
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        stacktrace = "".join(
+            traceback.format_exception(exc_type, exc_value, exc_traceback)
+        )
         logging.critical(stacktrace)
     print(f"Exception caught, check logs for information: {logfile}")
     exit(1)

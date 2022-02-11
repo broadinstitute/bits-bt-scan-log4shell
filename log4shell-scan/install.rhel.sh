@@ -2,17 +2,15 @@
 set -e
 
 printf "\n-------------------------------------------------------------------\n"
+printf "IMPORTANT REMINDER!\n"
 printf "> Remember to update any installation configuration in ./install.conf\n"
-printf "> Additionally, ensure log4shell-scan/listener/log4shell.yaml \n"
-printf "    is accurate and up-to-date for your needs. These settings may be \n"
-printf "    changed later but will require a listener service restart."
 printf "\n-------------------------------------------------------------------\n"
 printf "(cancel the install with Ctrl-C if you'd like to make any changes)\n"
 
 sleep 5
 
 SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
-source ${SCRIPTPATH}/install.conf
+source ${SCRIPTPATH}/install.rhel.conf
 
 printf "\n-------------------------------------------------------------------\n"
 printf "Current install configuration:\n"
@@ -34,31 +32,32 @@ if [[ "${ID}" != "rhel" ]]; then
     exit 1
 fi
 
-if [[ $(id -u) -ne 0 ]]; then
-   printf "\nERROR: This script must be run as root. Retry with sudo or login as root.\n\n"
-   exit 1
-fi
+# if [[ $(id -u) -ne 0 ]]; then
+#    printf "\nERROR: This script must be run as root. Retry with sudo or login as root.\n\n"
+#    exit 1
+# fi
+
+mkdir -p $SCRIPT_INSTALL_DIR
+mkdir -p $CONFIG_DIR
+mkdir -p $LOG_DIR
 
 # masscan
 printf "\n\n-------------------------------------------------------------------\n"
 printf "Preparing masscan...\n"
 cd ${SCRIPTPATH}
 printf "> Checking if masscan is installed...\n"
-if [[ -z "$(type -P masscan)" ]]; then
-    printf "> Installing masscan dependencies...\n"
-    yum update && yum -y install git make gcc
+if [[ -z "$(type -P /local/masscan/bin/masscan)" ]]; then
     printf "> Installing masscan...\n"
-    cd /lib && git clone https://github.com/robertdavidgraham/masscan
-    cd /lib/masscan && make install
+    cd /local && git clone https://github.com/robertdavidgraham/masscan
+    cd /local/masscan && make -j
 fi
 
-printf "> Adding masscan job to root's crontab...\n"
-echo "${MASSCAN_CRON} root /usr/bin/masscan -v -p${MASSCAN_TARGET_PORT_RANGE} ${MASSCAN_TARGET_CIDR_RANGE} -oL /tmp/masscan.tmp.txt --max-rate ${MASSCAN_RATE} && mv /tmp/masscan.tmp.txt /tmp/masscan.txt" > ${MASSCAN_CRON_LOC}
-chmod 600 ${MASSCAN_CRON_LOC}
+printf "> Adding masscan job to crontab...\n"
+(crontab -l; echo "${MASSCAN_CRON} /local/masscan/bin/masscan -v -p${MASSCAN_TARGET_PORT_RANGE} ${MASSCAN_TARGET_CIDR_RANGE} -oL ${MASSCAN_OUTPUT_TMP} --max-rate ${MASSCAN_RATE} && mv ${MASSCAN_OUTPUT_TMP} ${MASSCAN_OUTPUT}")|awk '!x[$0]++'|crontab -
 printf "> Masscan installed successfully.\n"
 
 # scanner
-SCANNER_SRC_PATH=${SCRIPTPATH}/log4shell-scan/scanner
+SCANNER_SRC_PATH=${SCRIPTPATH}/scanner
 printf "\n\n-------------------------------------------------------------------\n"
 printf "Preparing log4shell-scanner...\n"
 cd ${SCRIPTPATH}
@@ -67,19 +66,24 @@ if [[ -e $SCANNER_CONFIG_LOC ]]; then
     printf "> $SCANNER_CONFIG_LOC config detected, keeping original.\n"
 else
     cp ${SCANNER_SRC_PATH}/config.ini $SCANNER_CONFIG_LOC
+    sed -i "s:log_dir =:log_dir = ${SCANNER_LOG_LOC}:" $SCANNER_CONFIG_LOC
+    sed -i "s:primary_input =:primary_input = ${MASSCAN_OUTPUT}:" $SCANNER_CONFIG_LOC
+    sed -i "s:secondary_input =:secondary_input = ${MASSCAN_OUTPUT_TMP}:" $SCANNER_CONFIG_LOC
 fi
 cp ${SCANNER_SRC_PATH}/scan.py ${SCANNER_SCRIPT_LOC}
+if [[ "${SCRIPTS_PYTHONPATH}" != "/usr/bin/env python3" ]]; then
+    sed -i "s:#!/usr/bin/env python3:#!${SCRIPTS_PYTHONPATH}:" ${SCANNER_SCRIPT_LOC}
+fi
 printf "> Adjusting permissions...\n"
 chmod +x ${SCANNER_SCRIPT_LOC}
 printf "> Installing Python script requirements...\n"
-${SCANNER_PYTHONPATH} -m pip install -r ${SCANNER_SRC_PATH}/requirements.txt
-printf "> Adding scanner to root's crontab...\n"
-echo "${SCANNER_CRON} root ${SCANNER_SCRIPT_LOC}" > ${SCANNER_CRON_LOC}
-chmod 600 ${SCANNER_CRON_LOC}
+${SCRIPTS_PYTHONPATH} -m pip install --user -r ${SCANNER_SRC_PATH}/requirements.txt
+printf "> Adding scanner to crontab...\n"
+(crontab -l; echo "${SCANNER_CRON} ${SCANNER_SCRIPT_LOC}")|awk '!x[$0]++'|crontab -
 printf "> Scanner installed successfully.\n"
 
 # listener
-LISTENER_SRC_PATH=${SCRIPTPATH}/log4shell-scan/listener
+LISTENER_SRC_PATH=${SCRIPTPATH}/listener
 printf "\n\n-------------------------------------------------------------------\n"
 printf "Preparing log4shell-listener...\n"
 cd ${SCRIPTPATH}
@@ -88,19 +92,22 @@ if [[ -e $LISTENER_CONFIG_LOC ]]; then
     printf "> $LISTENER_CONFIG_LOC config detected, keeping original.\n"
 else
     cp ${LISTENER_SRC_PATH}/config.ini $LISTENER_CONFIG_LOC
+    sed -i "s:log_dir =:log_dir = ${LISTENER_LOG_LOC}:" $LISTENER_CONFIG_LOC
 fi
 cp ${LISTENER_SRC_PATH}/listen.py $LISTENER_SCRIPT_LOC
+sed -i "s:#!/usr/bin/env python3:#!${SCRIPTS_PYTHONPATH}:" $LISTENER_SCRIPT_LOC
+sed -i "s:L4SL_CONFIG_FILE = \"\":L4SL_CONFIG_FILE = \"${LISTENER_CONFIG_LOC}\":" $LISTENER_SCRIPT_LOC
 chmod +x $LISTENER_SCRIPT_LOC
 printf "> Installing Python script requirements...\n"
-${SCANNER_PYTHONPATH} -m pip install -r ${LISTENER_SRC_PATH}/requirements.txt
-printf "> Adding unit file to services...\n"
-cp ${LISTENER_SRC_PATH}/log4shell-listen.service $LISTENER_SERVICE_UNIT_LOC
-printf "> Reloading services and starting listener...\n"
-systemctl daemon-reload
-systemctl enable $LISTENER_SERVICE_NAME
-systemctl restart $LISTENER_SERVICE_NAME
+${SCRIPTS_PYTHONPATH} -m pip install --user -r ${LISTENER_SRC_PATH}/requirements.txt
+# printf "> Adding unit file to services...\n"
+# cp ${LISTENER_SRC_PATH}/log4shell-listen.service $LISTENER_SERVICE_UNIT_LOC
+printf "> Starting listener...\n"
+# systemctl daemon-reload
+# systemctl enable $LISTENER_SERVICE_NAME
+sudo systemctl restart $LISTENER_SERVICE_NAME
 sleep 2
-systemctl status $LISTENER_SERVICE_NAME
+sudo systemctl status $LISTENER_SERVICE_NAME
 sleep 2
 
 printf "\n\n----------------------------------------------------------------------\n"
@@ -110,7 +117,7 @@ printf "    ${SCANNER_CONFIG_LOC}\n"
 printf "> Note that any changes to the listener's config in \n"
 printf "    ${LISTENER_CONFIG_LOC} will require the service \n"
 printf "    to be restarted with: \n"
-printf "    $ sudo systemctl restart ${LISTENER_SERVICE_NAME}\n" 
+printf "    $ sudo systemctl restart ${LISTENER_SERVICE_NAME}\n"
 printf "> Changes to the cronjobs may be done in the two files:\n"
 printf "    ${SCANNER_CRON_LOC}\n"
 printf "    ${MASSCAN_CRON_LOC}\n"
