@@ -12,6 +12,7 @@ import logging
 LDAP_HEADER = b"\x30\x0c\x02\x01\x01\x61\x07\x0a\x01\x00\x04\x00\x04\x00\x0a"
 L4SL_CONFIG_FILE = ""
 
+
 class TCPRequestHandler(socketserver.BaseRequestHandler):
     def handle(self) -> None:
         addr = self.client_address[0]
@@ -48,14 +49,14 @@ try:
     config.read(config_file)
     for key in config["default"]:
         os.environ[f"L4SL_{key.upper()}"] = config["default"][key]
-    
-    LOG_DIR = os.environ.get('L4SL_LOG_DIR')
+
+    LOG_DIR = os.environ.get("L4SL_LOG_DIR")
     if not os.path.exists(LOG_DIR):
         os.mkdir(LOG_DIR)
     logfile = f"{LOG_DIR}/{date.today().isoformat()}.log"
     logging.basicConfig(level=logging.DEBUG, filename=logfile)
     logging.info(f"Writing logs to: {logfile}")
-    
+
     ip = os.environ["L4SL_LISTEN_IP"]
     port = int(os.environ["L4SL_LISTEN_PORT"])
     logging.info(f"Starting server on {ip}:{port}")
@@ -89,7 +90,9 @@ except Exception as e:
             f"Exception caught while handling exception: {type(f).__name__}: {f}"
         )
         exc_type, exc_value, exc_traceback = sys.exc_info()
-        stacktrace = "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+        stacktrace = "".join(
+            traceback.format_exception(exc_type, exc_value, exc_traceback)
+        )
         logging.critical(stacktrace)
     print(f"Exception caught, check logs for information: {logfile}")
     exit(1)

@@ -73,13 +73,13 @@ async def main(data):
 
 
 try:
-    config_file = os.environ['L4S_CONFIG_FILE']
+    config_file = os.environ["L4S_CONFIG_FILE"]
     config = configparser.ConfigParser()
     config.read(config_file)
     for key in config["default"]:
         os.environ[f"L4S_{key.upper()}"] = config["default"][key]
-    
-    LOG_DIR = os.environ.get('L4S_LOG_DIR')
+
+    LOG_DIR = os.environ.get("L4S_LOG_DIR")
     if not os.path.exists(LOG_DIR):
         os.mkdir(LOG_DIR)
     logfile = f"{LOG_DIR}/{date.today().isoformat()}.log"
@@ -87,11 +87,13 @@ try:
     clean_logs(LOG_DIR)
 
     logging.info(f"Writing logs to: {logfile}")
-    primary_input_file = os.environ.get('L4S_PRIMARY_INPUT')
-    secondary_input_file = os.environ.get('L4S_SECONDARY_INPUT', None)
+    primary_input_file = os.environ.get("L4S_PRIMARY_INPUT")
+    secondary_input_file = os.environ.get("L4S_SECONDARY_INPUT", None)
     if os.path.exists(primary_input_file):
         input_file = primary_input_file
-    elif not os.path.exists(primary_input_file) and os.path.exists(secondary_input_file):
+    elif not os.path.exists(primary_input_file) and os.path.exists(
+        secondary_input_file
+    ):
         input_file = secondary_input_file
     else:
         logging.critical(
@@ -142,7 +144,9 @@ except Exception as e:
             f"Exception caught while handling exception: {type(f).__name__}: {f}"
         )
         exc_type, exc_value, exc_traceback = sys.exc_info()
-        stacktrace = "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+        stacktrace = "".join(
+            traceback.format_exception(exc_type, exc_value, exc_traceback)
+        )
         logging.critical(stacktrace)
     print(f"Exception caught, check logs for information: {logfile}")
     exit(1)
