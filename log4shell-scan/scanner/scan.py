@@ -132,9 +132,10 @@ except Exception as e:
     try:
         if len(stacktrace) > 300:
             stacktrace = "...\n" + stacktrace[:-300]
+        hostname = os.environ.get("HOSTNAME", "unknown_hostname")
         message.send_message(
             os.environ["L4S_WEBHOOK"],
-            title=":exclamation: *Critical Error on log4shell-scan Script* :exclamation: @mobrien",
+            title=f":exclamation: *Critical Error on log4shell-scan Script on `{hostname}`* :exclamation: @mobrien",
             text=(
                 f"```{type(e).__name__}: {e}```\n"
                 f"```{stacktrace}```\n"
