@@ -27,7 +27,7 @@
 
 ```
 $ wget --header "Authorization: token ${GITHUB_ACCESS_TOKEN}" 'https://github.com/broadinstitute/bits-bt-scan-log4shell/archive/refs/tags/{RELEASE_TAG}.tar.gz' -O /tmp/log4shell.tar.gz
-$ tar -xvf /tmp/log4shell.tar.gz -C /local
+$ tar -xvf /tmp/log4shell.tar.gz -C /local/src
 ```
 
 ### Setup
@@ -44,7 +44,7 @@ $ tar -xvf /tmp/log4shell.tar.gz -C /local
     - Restarts the service.
 
 ```bash
-$ cd /local/bits-bt-scan-log4shell-{RELEASE_TAG}/log4shell-scan
+$ cd /local/src/bits-bt-scan-log4shell-{RELEASE_TAG}/log4shell-scan
 # Make any necessary changes to install.conf and the two additional config files listed below.
 $ vim install.rhel.conf
 $ vim scanner/config.ini
@@ -65,6 +65,6 @@ $ ./install.rhel.sh
 ### Uninstall
 
 ```bash
-$ cd /local/bits-bt-scan-log4shell-{RELEASE_TAG}/log4shell-scan
+$ cd /local/src/bits-bt-scan-log4shell-{RELEASE_TAG}/log4shell-scan
 $ ./uninstall.sh
 ```
