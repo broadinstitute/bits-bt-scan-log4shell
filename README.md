@@ -26,8 +26,8 @@
 ### Get
 
 ```
-$ wget --header "Authorization: token ${GITHUB_ACCESS_TOKEN}" 'https://github.com/broadinstitute/bits-bt-scan-log4shell/archive/refs/tags/{RELEASE_TAG}.tar.gz'
-$ sudo tar -xvf {RELEASE_TAG}.tar.gz -C /local
+$ wget --header "Authorization: token ${GITHUB_ACCESS_TOKEN}" 'https://github.com/broadinstitute/bits-bt-scan-log4shell/archive/refs/tags/{RELEASE_TAG}.tar.gz' -O /tmp/log4shell.tar.gz
+$ tar -xvf /tmp/log4shell.tar.gz -C /local
 ```
 
 ### Setup

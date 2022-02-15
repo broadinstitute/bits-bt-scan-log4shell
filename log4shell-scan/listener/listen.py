@@ -27,10 +27,11 @@ class TCPRequestHandler(socketserver.BaseRequestHandler):
 
         data = data.decode(errors="ignore").split("\n")[0]
         logging.info(f"Extracted value: {data}")
+        hostname = os.environ.get("HOSTNAME", "unknown_hostname")
         try:
             message.send_message(
                 os.environ["L4SL_WEBHOOK"],
-                title=":exclamation: *Exploitable Log4Shell Detected on Host* :exclamation: @here",
+                title=f":exclamation: *Exploitable Log4Shell Detected on Host (listener: `{hostname}`)* :exclamation: @here",
                 text=f"- *host*: `{addr}`\n- *exploit info*: `{data}`",
                 color="#ff0000",
             )
@@ -75,9 +76,10 @@ except Exception as e:
     try:
         if len(stacktrace) > 300:
             stacktrace = "...\n" + stacktrace[:-300]
+        hostname = os.environ.get("HOSTNAME", "unknown_hostname")
         message.send_message(
             os.environ["L4SL_WEBHOOK"],
-            title=":exclamation: *Critical Error on log4shell-listen Script* :exclamation: @mobrien",
+            title=f":exclamation: *Critical Error on log4shell-listen Script on `{hostname}`* :exclamation: @mobrien",
             text=(
                 f"```{type(e).__name__}: {e}```\n"
                 f"```{stacktrace}```\n"
