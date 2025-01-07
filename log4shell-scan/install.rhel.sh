@@ -79,7 +79,7 @@ chmod +x ${SCANNER_SCRIPT_LOC}
 printf "> Installing Python script requirements...\n"
 ${SCRIPTS_PYTHONPATH} -m pip install --user -r ${SCANNER_SRC_PATH}/requirements.txt
 printf "> Adding scanner to crontab...\n"
-(crontab -l; echo "${SCANNER_CRON} ${SCANNER_SCRIPT_LOC}")|awk '!x[$0]++'|crontab -
+(crontab -l; echo "${SCANNER_CRON} env L4S_CONFIG_FILE=\"${SCANNER_CONFIG_LOC}\" ${SCANNER_SCRIPT_LOC}")|awk '!x[$0]++'|crontab -
 printf "> Scanner installed successfully.\n"
 
 # listener
