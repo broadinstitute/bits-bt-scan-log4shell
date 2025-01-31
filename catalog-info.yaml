@@ -1,0 +1,15 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: bits-bt-scan-log4shell
+  description: BITS Blue Team's Log4Shell scanning tool.
+  tags:
+    - gcp
+    - scripts
+  annotations:
+    github.com/project-slug: broadinstitute/bits-bt-scan-log4shell
+    backstage.io/source-template: template:default/open-pr-with-catalog-entry
+spec:
+  type: service
+  lifecycle: production
+  owner: bits-blue-team
