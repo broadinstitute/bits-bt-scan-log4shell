@@ -1,5 +1,8 @@
 # Broad log4shell Web Server Scan Tool
 
+> [!NOTE]
+> This repository has been made public as the tool is no longer in use by the security team, and was primarily used as an intial assessment of our exposure in the immediate aftermath of the log4shell vulnerability disclosure.
+
 ## Architecture
 
 ![Lucidchart](./lucidchart.png)
@@ -10,6 +13,7 @@
 ### Requirements
 
 #### Pre-requirements
+
 - **Debian OR RHEL8**
   - Tested on Debian 10 (buster), Debian 11 (bullseye), and RHEL 8.
   - May work on other Linux distros but may also break things. So for now the install script will refuse to install on a non-Debian/RHEL system.
@@ -60,7 +64,7 @@ $ ./install.rhel.sh
 - Configure the scan script in [config.ini](./log4shell-scan/scanner/config.ini).
   - May be done after install, the scanner will grab the latest config the next time it runs.
 - Configure the listener in [config.ini](./log4shell-scan/listener/config.ini).
-  - May be done after install, however *requires a restart to the listener system service* (`sudo systemctl restart log4shell-listen.service`).
+  - May be done after install, however _requires a restart to the listener system service_ (`sudo systemctl restart log4shell-listen.service`).
 
 ### Uninstall
 
