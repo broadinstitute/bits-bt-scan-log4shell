@@ -1,6 +1,6 @@
 # Log4Shell Scanner
 
-![Lucidchart](./lucidchart.png)
+![Lucidchart](../lucidchart.png)
 
 ## Usage
 
