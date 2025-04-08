@@ -25,7 +25,7 @@ repos:
       - id: remove-tabs
 
   - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
+    rev: 6.0.1
     hooks:
       - id: isort
         name: isort
@@ -38,7 +38,7 @@ repos:
         args: ["--disable-plugin", "KeywordDetector"]
 
   - repo: https://github.com/psf/black
-    rev: 24.10.0
+    rev: 25.1.0
     hooks:
       - id: black
         # It is recommended to specify the latest version of Python
@@ -48,6 +48,6 @@ repos:
         language_version: python3.11
 
   - repo: https://github.com/gruntwork-io/pre-commit
-    rev: v0.1.25 # Get the latest from: https://github.com/gruntwork-io/pre-commit/releases
+    rev: v0.1.28 # Get the latest from: https://github.com/gruntwork-io/pre-commit/releases
     hooks:
       - id: shellcheck
